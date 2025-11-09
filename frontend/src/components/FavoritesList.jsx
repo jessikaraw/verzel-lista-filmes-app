@@ -1,47 +1,41 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
+/**
+ * Lista os filmes que estão no estado 'favorites' de App.jsx
+ * O backend agora salva 'tmdb_id' e 'poster_path', então usamos esses dados.
+ */
 function FavoritesList({ favorites, onRemoveFavorite }) {
-  const [userFavorites, setUserFavorites] = useState([]);
-  const [userId] = useState(localStorage.getItem('userId'));
-
-  useEffect(() => {
-    const fetchFavorites = async () => {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/movies/favorites`,
-          {
-            headers: { 'X-User-ID': userId },
-          }
-        );
-        const data = await response.json();
-        setUserFavorites(data);
-      } catch (error) {
-        console.error('Erro ao buscar favoritos:', error);
-      }
-    };
-
-    fetchFavorites();
-  }, [userId]);
-
   return (
-    <div className="favorites-list">
-      <h2>Meus Filmes Favoritos</h2>
-      {userFavorites.length === 0 ? (
-        <p>Nenhum filme favorito ainda.</p>
+    <main className="favorites-list">
+      <h2>Meus Favoritos</h2>
+      {favorites.length === 0 ? (
+        <p>Você ainda não tem filmes favoritos.</p>
       ) : (
-        <ul>
-          {userFavorites.map((movie) => (
-            <li key={movie.tmdb_id}>
-              <span>{movie.title}</span>
-              <span className="rating">⭐ {movie.rating}</span>
-              <button onClick={() => onRemoveFavorite(movie.tmdb_id)}>
-                ❌ Remover
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="movies-grid">
+          {favorites.map((movie) => {
+            
+            // Usa os dados salvos no nosso banco (poster_path, tmdb_id, title, rating)
+            const posterUrl = movie.poster_path
+              ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+              : 'https://via.placeholder.com/500x750?text=Sem+Imagem';
+              
+            return (
+              <div key={movie.tmdb_id} className="movie-card">
+                <img src={posterUrl} alt={movie.title} />
+                <h3>{movie.title}</h3>
+                <p>Nota TMDb: {movie.rating ? movie.rating.toFixed(1) : 'N/A'}</p>
+                <button 
+                  className="favorite-btn remove"
+                  onClick={() => onRemoveFavorite(movie.tmdb_id)}
+                >
+                  ★ Remover dos Favoritos
+                </button>
+              </div>
+            );
+          })}
+        </div>
       )}
-    </div>
+    </main>
   );
 }
 
